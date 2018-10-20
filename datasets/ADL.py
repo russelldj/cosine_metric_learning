@@ -6,7 +6,7 @@ import scipy.io as sio
 
 
 # The maximum person ID in the dataset.
-MAX_LABEL = 1501 #MOD was 1501
+MAX_LABEL = 6076 # 8418 #MOD was 1501
 
 IMAGE_SHAPE = 128, 128, 3 #MOD was 128, 64, 3
 
