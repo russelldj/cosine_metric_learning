@@ -1,1 +1,0 @@
-CUDA_VISIBLE_DEVICES=2 python tools/generate_detections.py --model ./models/feature_extractors/market1501-low-lr-107.pb  --mot_dir ./MOT16/ADL --detection_dir resources/detections/ADL --output_dir ./resources/detections/ADL --is-npy-detection
