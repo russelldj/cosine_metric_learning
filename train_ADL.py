@@ -4,6 +4,7 @@ import os
 import numpy as np
 import scipy.io as sio
 import train_app
+import cosine_inference
 from datasets import ADL #MOD was ADL
 from datasets import util
 import nets.deep_sort.network_definition as net
