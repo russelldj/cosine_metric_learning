@@ -4,10 +4,10 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-from datasets import util
-import queued_trainer
-import metrics
-import losses
+from .datasets import util
+from . import queued_trainer
+from . import metrics
+from . import losses
 
 
 def create_default_argument_parser(dataset_name):
@@ -28,8 +28,7 @@ def create_default_argument_parser(dataset_name):
         description="Metric trainer (%s)" % dataset_name)
     parser.add_argument(
         "--batch_size", help="Training batch size", default=128, type=int)
-    parser.add_argument(
-        "--learning_rate", help="Learning rate", default=1e-3, type=float)
+    parser.add_argument( "--learning_rate", help="Learning rate", default=1e-3, type=float)
     parser.add_argument(
         "--eval_log_dir",
         help="Evaluation log directory (only used in mode 'evaluation').",
@@ -524,6 +523,48 @@ def freeze(preprocess_fn, network_factory, checkpoint_path, image_shape,
         with tf.gfile.GFile(output_filename, "wb") as file_handle:
             file_handle.write(output_graph_def.SerializeToString())
 
+def return_encoder(preprocess_fn, network_factory, checkpoint_path, images_or_filenames,
+           batch_size=32, session=None, image_shape=None):
+    """
+
+    Parameters
+    ----------
+    preprocess_fn : Callable[tf.Tensor] -> tf.Tensor
+        A callable that applies preprocessing to a given input image tensor of
+        dtype tf.uint8 and returns a floating point representation (tf.float32).
+    network_factory : Callable[tf.Tensor] -> (tf.Tensor, tf.Tensor)
+        A callable that takes as argument a preprocessed input image of dtype
+        tf.float32 and returns the feature representation as well as a logits
+        tensors. The logits may be set to None if not required by the loss.
+    checkpoint_path : str
+        Checkpoint file to load.
+    images_or_filenames : List[str] | np.ndarray
+        Either a list of filenames or an array of images.
+    batch_size : Optional[int]
+        Optional batch size; defaults to 32.
+    session : Optional[tf.Session]
+        Optional TensorFlow session. If None, a new session is created.
+    image_shape : Tuple[int, int, int] | NoneType
+        Image shape (height, width, channels) or None. If None, `train_x` must
+        be an array of images such that the shape can be queries from this
+        variable.
+
+    Returns
+    -------
+    np.ndarray
+
+    """
+    if image_shape is None:
+        assert type(images_or_filenames) == np.ndarray
+        image_shape = images_or_filenames.shape[1:]
+    elif type(images_or_filenames) == np.ndarray:
+        assert images_or_filenames.shape[1:] == image_shape
+    read_from_file = type(images_or_filenames) != np.ndarray
+
+    encoder_fn = _create_encoder(
+        preprocess_fn, network_factory, image_shape, batch_size, session,
+        checkpoint_path, read_from_file)
+    return encoder_fn
 
 def encode(preprocess_fn, network_factory, checkpoint_path, images_or_filenames,
            batch_size=32, session=None, image_shape=None):
@@ -566,14 +607,9 @@ def encode(preprocess_fn, network_factory, checkpoint_path, images_or_filenames,
     encoder_fn = _create_encoder(
         preprocess_fn, network_factory, image_shape, batch_size, session,
         checkpoint_path, read_from_file)
-    import time
-    pdb.set_trace()
-    for i in range(1000):
-        start = time.time()
-        features = encoder_fn(images_or_filenames)
-        print(" in encode {}".format(time.time() - start)):
+    features = encoder_fn(images_or_filenames)
+    self.encode_fn = encode_fn
     return features
-
 
 def _create_encoder(preprocess_fn, network_factory, image_shape, batch_size=32,
                     session=None, checkpoint_path=None, read_from_file=False):

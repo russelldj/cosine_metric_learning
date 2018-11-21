@@ -2,12 +2,14 @@ import functools
 import os
 import numpy as np
 import scipy.io as sio
-import train_app
-from datasets import ADL #MOD was ADL
-from datasets import util
-import nets.deep_sort.network_definition as net
+from .datasets import ADL #MOD was ADL
+from .datasets import util
 import tensorflow as tf
 import time
+import numpy as np
+
+import deep_sort.cosine_metric_learning.nets.deep_sort.network_definition as net
+from . import train_app
 
 class CosineInference(object):
     def __init__(self):
@@ -21,25 +23,20 @@ class CosineInference(object):
         self.BATCH_SIZE = 1
         self.weights_path = "/home/drussel1/data/readonly/models/cosine_metric_extractor_ckpt/model.ckpt-208964"
         self.session = tf.Session()
-        self._encoder = train_app._create_encoder(\
-                net.preprocess, self.network_factory, ADL.IMAGE_SHAPE, self.BATCH_SIZE, session=self.session, checkpoint_path=self.weights_path, read_from_file=False)
+        self.encoder = train_app.return_encoder(
+            net.preprocess, self.network_factory, self.weights_path,
+            np.random.randint(0, 255, (1,128, 128,3)), image_shape=ADL.IMAGE_SHAPE, batch_size=self.BATCH_SIZE, session=self.session)
 
-    #TODO this needs to be tweaked so it actually works on images
     def get_features(self, filenames):# this will eventually need to be the actual images
-        import pdb; pdb.set_trace()
-        #return self._encoder(filenames)
-        # all I want here is to do sess.run(feed_dict={name, value})
-        #features = self.session.run(feed_dict={} 
-        features = train_app.encode(
-            net.preprocess, self.network_factory, self.weights_path, 
-            filenames, session=self.session, batch_size=self.BATCH_SIZE, image_shape=ADL.IMAGE_SHAPE)
-        return features
+        print("new style self.encoder")
+        return self.encoder(filenames)
 
 def test_image_reading(filenames):
     import tensorflow as tf
     cosine_inferer=CosineInference()
     with tf.Session() as sess:
         print(cosine_inferer.get_features(filenames, session=sess))
+
 
 if __name__=="__main__":
     print('testing cosine inference')
