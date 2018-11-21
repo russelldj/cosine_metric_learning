@@ -10,7 +10,6 @@ import tensorflow as tf
 import time
 
 class CosineInference(object):
-
     def __init__(self):
         arg_parser = train_app.create_default_argument_parser("Market1501")
         arg_parser.add_argument(
@@ -22,11 +21,18 @@ class CosineInference(object):
         self.BATCH_SIZE = 1
         self.weights_path = "/home/drussel1/data/readonly/models/cosine_metric_extractor_ckpt/model.ckpt-208964"
         self.session = tf.Session()
+        self._encoder = train_app._create_encoder(\
+                net.preprocess, self.network_factory, ADL.IMAGE_SHAPE, self.BATCH_SIZE, session=self.session, checkpoint_path=self.weights_path, read_from_file=False)
 
+    #TODO this needs to be tweaked so it actually works on images
     def get_features(self, filenames):# this will eventually need to be the actual images
+        import pdb; pdb.set_trace()
+        #return self._encoder(filenames)
+        # all I want here is to do sess.run(feed_dict={name, value})
+        #features = self.session.run(feed_dict={} 
         features = train_app.encode(
-            net.preprocess, self.network_factory, self.weights_path,
-            filenames, image_shape=ADL.IMAGE_SHAPE, batch_size=self.BATCH_SIZE, session=self.session)
+            net.preprocess, self.network_factory, self.weights_path, 
+            filenames, session=self.session, batch_size=self.BATCH_SIZE, image_shape=ADL.IMAGE_SHAPE)
         return features
 
 def test_image_reading(filenames):
@@ -34,7 +40,6 @@ def test_image_reading(filenames):
     cosine_inferer=CosineInference()
     with tf.Session() as sess:
         print(cosine_inferer.get_features(filenames, session=sess))
-
 
 if __name__=="__main__":
     print('testing cosine inference')
@@ -46,4 +51,5 @@ if __name__=="__main__":
     for i in range(100):
         feats = cosine_inference.get_features(images)
         print("the features shape is {} and their norm is {}".format(feats.shape, np.linalg.norm(feats)))
+        print(feats)
     print(start_time - time.time())

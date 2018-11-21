@@ -68,7 +68,6 @@ def create_network(images, num_classes=None, add_logits=True, reuse=None,
         summarize_activations=create_summaries)
 
     feature_dim = network.get_shape().as_list()[-1]
-    print("feature dimensionality: ", feature_dim)
     network = slim.flatten(network)
 
     network = slim.dropout(network, keep_prob=0.6)

@@ -566,7 +566,12 @@ def encode(preprocess_fn, network_factory, checkpoint_path, images_or_filenames,
     encoder_fn = _create_encoder(
         preprocess_fn, network_factory, image_shape, batch_size, session,
         checkpoint_path, read_from_file)
-    features = encoder_fn(images_or_filenames)
+    import time
+    pdb.set_trace()
+    for i in range(1000):
+        start = time.time()
+        features = encoder_fn(images_or_filenames)
+        print(" in encode {}".format(time.time() - start)):
     return features
 
 

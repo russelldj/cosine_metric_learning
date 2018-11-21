@@ -27,6 +27,7 @@ def run_in_batches(f, data_dict, out, batch_size):
         `f` contains fewer examples.
 
     """
+    #import pdb; pdb.set_trace()
     data_len = len(out)
     num_batches = int(data_len / batch_size)
 
@@ -38,6 +39,7 @@ def run_in_batches(f, data_dict, out, batch_size):
 
     s, e = 0, batch_size
     for i in range(num_batches):
+        #import pdb; pdb.set_trace()
         s, e = i * batch_size, (i + 1) * batch_size
         batch_data_dict = {k: v[s:e] for k, v in data_dict.items()}
         out[s:e] = f(batch_data_dict)
